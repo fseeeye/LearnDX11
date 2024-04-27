@@ -2,8 +2,7 @@
 // DXTrace.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
-// DirectX错误追踪 
-// DirectX Error Tracing. 
+// DirectX 错误追踪，包含了HR宏与DXTraceW函数。
 //***************************************************************************************
 
 #ifndef DXTRACE_H

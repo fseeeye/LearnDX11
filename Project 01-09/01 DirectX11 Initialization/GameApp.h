@@ -1,3 +1,5 @@
+// 游戏应用程序扩展类，游戏逻辑在这里实现，继承自D3DApp类
+
 #ifndef GAMEAPP_H
 #define GAMEAPP_H
 
