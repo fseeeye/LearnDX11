@@ -1,21 +1,44 @@
-Debug/
-Release/
-x64/
+### IDE ###
 .git/
 .vs/
 .vscode/
+
+### xmake ###
+# Xmake cache
+.xmake/
 build/
-backup/
-lib/
-*.cso
-*.mbo
-*.inc
-*.ilk
+vsxmake*/
+
+### C++ ###
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
 *.lib
-*.iobj
-*.ipdb
-*.pdb
-*.exp
-*.lastcodeanalysissucceeded
-!dxtex.exe
+
+# Executables
 *.exe
+*.out
+*.app

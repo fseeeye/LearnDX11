@@ -1,11 +1,13 @@
 # Learn DirectX11 With Windows SDK
 
 Based on :
-- C++17
+- C++20
 - HLSL Shader Model 5.0
 
 ## Get Started
 
+1. Run `xmake project -k vsxmake`
+2. Open the generated VS solution file in `vsxmake20xx` folder.
 1. Choose **Release x64** and Build in Visual Studio.
 
 ## Core Dependencies
@@ -15,8 +17,8 @@ Based on :
 - [DirectXTex/DDSTextureLoader](https://github.com/Microsoft/DirectXTex/tree/master/DDSTextureLoader)
 - [DirectXTex/WICTextureLoader](https://github.com/Microsoft/DirectXTex/tree/master/WICTextureLoader)
 - [DirectXTex/ScreenGrab](https://github.com/Microsoft/DirectXTex/tree/master/ScreenGrab)
-- [DirectXTK/Mouse(源码上有所修改)](https://github.com/Microsoft/DirectXTK/tree/master/Src)：Not compatible with imgui.
-- [DirectXTK/Keyboard(源码上有所修改)](https://github.com/Microsoft/DirectXTK/tree/master/Src)：Not compatible with imgui.
+- [DirectXTK/Mouse](https://github.com/Microsoft/DirectXTK/tree/master/Src)：Not compatible with imgui. (源码上有所修改)
+- [DirectXTK/Keyboard](https://github.com/Microsoft/DirectXTK/tree/master/Src)：Not compatible with imgui. (源码上有所修改)
 
 ## File Structure
 
@@ -29,6 +31,7 @@ Based on :
      |----assimp-vc14*-mt.dll  (从build/Assimp/bin/Release(或Debug)复制一份)
      |----Shaders/
 ```
+
 ## Ref
 
 - DirectX11 With Windows SDK : https://directx11.tech/
