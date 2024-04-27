@@ -12,13 +12,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: xmake-io/github-action-setup-xmake@v1
       with:
         xmake-version: latest
     - name: Build
       run: |
         xmake --version
+        echo "[-] Generate VS files..."
         xmake project -k vsxmake
+        echo "[-] Build Project..."
         xmake
-
