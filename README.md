@@ -6,6 +6,7 @@ Based on :
 
 ## Get Started
 
+1. Install xmake : `winget install xmake`
 1. Run `xmake project -k vsxmake`
 2. Open the generated VS solution file in `vsxmake20xx` folder.
 1. Choose **Release x64** and Build in Visual Studio.

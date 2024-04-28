@@ -1,11 +1,13 @@
 # You can modify the rules from these initially generated values to suit your own policies
 # You can learn more about editorconfig here: https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
 
-[*.{cpp,h,hlsl,hlsli}]
+[*.{c,c++,c++m,cc,ccm,cginc,compute,cp,cpp,cppm,cshtml,cu,cuh,cxx,cxxm,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,ixx,mpp,mq4,mq5,mqh,mxx,razor,tpp,usf,ush}]
+indent_style = tab
 indent_size = 4
-indent_style = space
+tab_width = 4
 trim_trailing_whit_space = true
 end_of_line = crlf
+indent_size = tab
 
 [*.{cpp,h}]
 charset = utf-8

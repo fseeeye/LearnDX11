@@ -2,11 +2,10 @@
 // d3dUtil.h by X_Jun(MKXJun) (C) 2018-2022 All Rights Reserved.
 // Licensed under the MIT License.
 //
-// D3D实用工具集，包含一些常用头文件及实用函数。
+// D3D Utility Tools, include common header files and utility functions.
 //***************************************************************************************
 
-#ifndef D3DUTIL_H
-#define D3DUTIL_H
+#pragma once
 
 #include <d3d11_1.h>            // 已包含Windows.h
 #include <DirectXCollision.h>   // 已包含DirectXMath.h
@@ -39,14 +38,14 @@
 // 为D3D设备创建出来的对象在图形调试器中设置对象名
 // [In]resource				D3D11设备创建出的对象
 // [In]name					对象名
-template<UINT TNameLength>
-inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char(&name)[TNameLength])
+template <UINT TNameLength>
+inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const char (&name)[TNameLength])
 {
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     resource->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
 #else
-    UNREFERENCED_PARAMETER(resource);
-    UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(resource);
+	UNREFERENCED_PARAMETER(name);
 #endif
 }
 
@@ -62,9 +61,9 @@ inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ LPCST
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     resource->SetPrivateData(WKPDID_D3DDebugObjectName, length, name);
 #else
-    UNREFERENCED_PARAMETER(resource);
-    UNREFERENCED_PARAMETER(name);
-    UNREFERENCED_PARAMETER(length);
+	UNREFERENCED_PARAMETER(resource);
+	UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(length);
 #endif
 }
 
@@ -79,8 +78,8 @@ inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ const
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     resource->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)name.length(), name.c_str());
 #else
-    UNREFERENCED_PARAMETER(resource);
-    UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(resource);
+	UNREFERENCED_PARAMETER(name);
 #endif
 }
 
@@ -94,7 +93,7 @@ inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ std::
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     resource->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 #else
-    UNREFERENCED_PARAMETER(resource);
+	UNREFERENCED_PARAMETER(resource);
 #endif
 }
 
@@ -104,14 +103,14 @@ inline void D3D11SetDebugObjectName(_In_ ID3D11DeviceChild* resource, _In_ std::
 // 为DXGI对象在图形调试器中设置对象名
 // [In]object				DXGI对象
 // [In]name					对象名
-template<UINT TNameLength>
-inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ const char(&name)[TNameLength])
+template <UINT TNameLength>
+inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ const char (&name)[TNameLength])
 {
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     object->SetPrivateData(WKPDID_D3DDebugObjectName, TNameLength - 1, name);
 #else
-    UNREFERENCED_PARAMETER(object);
-    UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(object);
+	UNREFERENCED_PARAMETER(name);
 #endif
 }
 
@@ -127,9 +126,9 @@ inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ LPCSTR name, _
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     object->SetPrivateData(WKPDID_D3DDebugObjectName, length, name);
 #else
-    UNREFERENCED_PARAMETER(object);
-    UNREFERENCED_PARAMETER(name);
-    UNREFERENCED_PARAMETER(length);
+	UNREFERENCED_PARAMETER(object);
+	UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(length);
 #endif
 }
 
@@ -144,8 +143,8 @@ inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ const std::str
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     object->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)name.length(), name.c_str());
 #else
-    UNREFERENCED_PARAMETER(object);
-    UNREFERENCED_PARAMETER(name);
+	UNREFERENCED_PARAMETER(object);
+	UNREFERENCED_PARAMETER(name);
 #endif
 }
 
@@ -159,9 +158,6 @@ inline void DXGISetDebugObjectName(_In_ IDXGIObject* object, _In_ std::nullptr_t
 #if (defined(DEBUG) || defined(_DEBUG)) && (GRAPHICS_DEBUGGER_OBJECT_NAME)
     object->SetPrivateData(WKPDID_D3DDebugObjectName, 0, nullptr);
 #else
-    UNREFERENCED_PARAMETER(object);
+	UNREFERENCED_PARAMETER(object);
 #endif
 }
-
-
-#endif

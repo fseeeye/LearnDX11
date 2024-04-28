@@ -1,11 +1,6 @@
-
 #pragma once
 
-#ifndef WINMAIN_H
-#define WINMAIN_H
-
 // 定义下面这些宏以去掉Windows中那些没用的组件
-
 #ifndef FULL_WINTARD
 #define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS
@@ -41,10 +36,6 @@
 #define NOIMAGE
 #define NOTAPE
 #endif
-
 #define NOMINMAX
 
-
 #include <Windows.h>
-
-#endif

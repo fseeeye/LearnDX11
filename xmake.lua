@@ -14,7 +14,7 @@ set_warnings("all", "error")
 -- define target
 target("01_init_dx11")
     set_kind("binary")
-    set_group("foundation")
+    set_group("Foundation")
 
     -- add files
     add_files("src/00_init_dx11/*.cpp")

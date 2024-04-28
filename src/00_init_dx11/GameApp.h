@@ -1,20 +1,19 @@
-// 游戏应用程序扩展类，游戏逻辑在这里实现，继承自D3DApp类
+//***************************************************************************************
+// Game Application Class (Inherited from D3DApp class), impl game logic.
+//***************************************************************************************
 
-#ifndef GAMEAPP_H
-#define GAMEAPP_H
+#pragma once
 
 #include "d3dApp.h"
-class GameApp : public D3DApp
+
+class GameApp final : public D3DApp
 {
 public:
-    GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight);
-    ~GameApp();
+	GameApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight);
+	~GameApp() override = default;
 
-    bool Init();
-    void OnResize();
-    void UpdateScene(float dt);
-    void DrawScene();
+	bool Init() override;
+	void OnResize() override;
+	void UpdateScene(float dt) override;
+	void DrawScene() override;
 };
-
-
-#endif
