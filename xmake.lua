@@ -2,8 +2,14 @@
 set_languages("c++20")
 
 -- add debug and release modes
-add_rules("mode.debug", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
+add_rules("mode.debug", "mode.release")
+if is_mode("debug") then
+    add_defines("DEBUG", "_DEBUG")
+    set_runtimes("MTd") -- msvc runtime library: multithreaded static library (debug)
+else
+    set_runtimes("MT") -- msvc runtime library: multithreaded static library
+end
 
 -- add macro definition
 add_defines("UNICODE", "_UNICODE")
@@ -27,7 +33,7 @@ target("01_init_dx11")
 
     -- add Windows SDK links
     add_rules("win.sdk.application")
-    add_syslinks("d3d11")
+    add_syslinks("d3d11", "dxguid.lib")
 
     -- set optimization: none, faster, fastest, smallest
     set_optimize("none")

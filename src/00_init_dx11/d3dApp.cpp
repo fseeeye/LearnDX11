@@ -79,7 +79,7 @@ float D3DApp::AspectRatio() const
 
 int D3DApp::Run()
 {
-	MSG msg = {0};
+	MSG msg = {nullptr};
 
 	m_Timer.Reset();
 
@@ -107,7 +107,7 @@ int D3DApp::Run()
 		}
 	}
 
-	return (int)msg.wParam;
+	return static_cast<int>(msg.wParam);
 }
 
 bool D3DApp::Init()
@@ -329,9 +329,9 @@ bool D3DApp::InitMainWindow()
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = m_hAppInst;
-	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
-	wc.hCursor = LoadCursor(0, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
+	wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(NULL_BRUSH));
 	wc.lpszMenuName = 0;
 	wc.lpszClassName = L"D3DWndClassName";
 
@@ -348,7 +348,8 @@ bool D3DApp::InitMainWindow()
 	int height = R.bottom - R.top;
 
 	m_hMainWnd = CreateWindow(L"D3DWndClassName", m_MainWndCaption.c_str(),
-	                          WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, m_hAppInst, 0);
+	                          WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr,
+	                          m_hAppInst, nullptr);
 	if (!m_hMainWnd)
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);
@@ -365,12 +366,7 @@ bool D3DApp::InitDirect3D()
 {
 	HRESULT hr = S_OK;
 
-	// 创建D3D设备 和 D3D设备上下文
-	UINT createDeviceFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
-    createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-	// 驱动类型数组
+	// 设置驱动类型数组与特性等级数组
 	D3D_DRIVER_TYPE driverTypes[] =
 	{
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -379,7 +375,6 @@ bool D3DApp::InitDirect3D()
 	};
 	UINT numDriverTypes = ARRAYSIZE(driverTypes);
 
-	// 特性等级数组
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
 		D3D_FEATURE_LEVEL_11_1,
@@ -387,18 +382,33 @@ bool D3DApp::InitDirect3D()
 	};
 	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
+	/* 初始化 D3D Device & Context */
+
 	D3D_FEATURE_LEVEL featureLevel;
-	D3D_DRIVER_TYPE d3dDriverType;
 	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
 	{
-		d3dDriverType = driverTypes[driverTypeIndex];
-		hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-		                       D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel,
-		                       m_pd3dImmediateContext.GetAddressOf());
+		const D3D_DRIVER_TYPE d3dDriverType = driverTypes[driverTypeIndex];
+		UINT createDeviceFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+		// 如果需要调试 D3D Device (在Debug模式下)，可以指定D3D11_CREATE_DEVICE_DEBUG枚举值。指定该值后，可以在出现程序异常的时候观察调试输出窗口的信息。
+		createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+		// 尝试创建 D3D Device
+		hr = D3D11CreateDevice(nullptr, // 制定显示适配器/显卡设备，nullptr 则由底层驱动来帮我们决定使用哪个显卡
+		                       d3dDriverType, // 驱动类型
+		                       nullptr, // 软件驱动模块的句柄，若设配器选择 D3D_DRIVER_TYPE_SOFTWARE，则需要提供程序模块
+		                       createDeviceFlags, // D3D11_CREATE_DEVICE_FLAG
+		                       featureLevels, // 特性等级数组
+		                       numFeatureLevels, // 特性等级数组的大小
+		                       D3D11_SDK_VERSION, // D3D11 SDK 版本
+		                       m_pd3dDevice.GetAddressOf(), // 返回创建的 D3D Device
+		                       &featureLevel, // 返回创建的 feature level
+		                       m_pd3dImmediateContext.GetAddressOf()); // 返回创建的 D3D Context
 
 		if (hr == E_INVALIDARG)
 		{
-			// Direct3D 11.0 的API不承认D3D_FEATURE_LEVEL_11_1，所以我们需要尝试特性等级11.0以及以下的版本
+			// 如果Direct3D 11.0 的API不承认D3D_FEATURE_LEVEL_11_1，所以我们需要尝试特性等级11.0以及以下的版本
 			hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, &featureLevels[1],
 			                       numFeatureLevels - 1,
 			                       D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel,
@@ -408,7 +418,6 @@ bool D3DApp::InitDirect3D()
 		if (SUCCEEDED(hr))
 			break;
 	}
-
 	if (FAILED(hr))
 	{
 		MessageBox(0, L"D3D11CreateDevice Failed.", 0, 0);
@@ -427,6 +436,7 @@ bool D3DApp::InitDirect3D()
 		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality);
 	assert(m_4xMsaaQuality > 0);
 
+	/* 初始化 DXGI, 包括: Swapchain */
 
 	ComPtr<IDXGIDevice> dxgiDevice = nullptr;
 	ComPtr<IDXGIAdapter> dxgiAdapter = nullptr;
@@ -446,13 +456,14 @@ bool D3DApp::InitDirect3D()
 	{
 		HR(m_pd3dDevice.As(&m_pd3dDevice1));
 		HR(m_pd3dImmediateContext.As(&m_pd3dImmediateContext1));
-		// 填充各种结构体用以描述交换链
+
+		// Swapchain Description
 		DXGI_SWAP_CHAIN_DESC1 sd;
 		ZeroMemory(&sd, sizeof(sd));
 		sd.Width = m_ClientWidth;
 		sd.Height = m_ClientHeight;
 		sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		// 是否开启4倍多重采样？
+		// MSAA
 		if (m_Enable4xMsaa)
 		{
 			sd.SampleDesc.Count = 4;
@@ -468,20 +479,22 @@ bool D3DApp::InitDirect3D()
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		sd.Flags = 0;
 
-		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fd;
-		fd.RefreshRate.Numerator = 60;
-		fd.RefreshRate.Denominator = 1;
-		fd.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		fd.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		fd.Windowed = TRUE;
-		// 为当前窗口创建交换链
-		HR(dxgiFactory2->CreateSwapChainForHwnd(m_pd3dDevice.Get(), m_hMainWnd, &sd, &fd, nullptr, m_pSwapChain1.
+		// Swapchain Description
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsd;
+		fsd.RefreshRate.Numerator = 60;
+		fsd.RefreshRate.Denominator = 1;
+		fsd.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		fsd.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		fsd.Windowed = TRUE;
+
+		// 为当前窗口创建 Swapchain
+		HR(dxgiFactory2->CreateSwapChainForHwnd(m_pd3dDevice.Get(), m_hMainWnd, &sd, &fsd, nullptr, m_pSwapChain1.
 			GetAddressOf()));
 		HR(m_pSwapChain1.As(&m_pSwapChain));
 	}
 	else
 	{
-		// 填充DXGI_SWAP_CHAIN_DESC用以描述交换链
+		// Swapchain Description
 		DXGI_SWAP_CHAIN_DESC sd;
 		ZeroMemory(&sd, sizeof(sd));
 		sd.BufferDesc.Width = m_ClientWidth;
@@ -491,7 +504,7 @@ bool D3DApp::InitDirect3D()
 		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		// 是否开启4倍多重采样？
+		// MSAA
 		if (m_Enable4xMsaa)
 		{
 			sd.SampleDesc.Count = 4;
@@ -508,25 +521,28 @@ bool D3DApp::InitDirect3D()
 		sd.Windowed = TRUE;
 		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		sd.Flags = 0;
+
+		// 为当前窗口创建 Swapchain
 		HR(dxgiFactory1->CreateSwapChain(m_pd3dDevice.Get(), &sd, m_pSwapChain.GetAddressOf()));
 	}
 
-
-	// 可以禁止alt+enter全屏
+	// 禁止alt+enter全屏
 	dxgiFactory1->MakeWindowAssociation(m_hMainWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
+
+	/* 调用 D3D11 API 执行初始化 */
 
 	// 设置调试对象名
 	D3D11SetDebugObjectName(m_pd3dImmediateContext.Get(), "ImmediateContext");
 	DXGISetDebugObjectName(m_pSwapChain.Get(), "SwapChain");
 
-	// 每当窗口被重新调整大小的时候，都需要调用这个OnResize函数。现在调用
-	// 以避免代码重复
+	// 初始化 D3D11 Resources
+	// Tips : 每当窗口被重新调整大小的时候，都需要调用这个OnResize函数。现在调用以避免代码重复。
 	OnResize();
 
 	return true;
 }
 
-void D3DApp::CalculateFrameStats()
+void D3DApp::CalculateFrameStats() const
 {
 	// 该代码计算每秒帧速，并计算每一帧渲染需要的时间，显示在窗口标题
 	static int frameCnt = 0;

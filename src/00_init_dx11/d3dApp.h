@@ -84,7 +84,7 @@ protected:
     /**
      * 计算每秒帧数并在窗口显示
      */
-    void CalculateFrameStats();
+    void CalculateFrameStats() const;
 
 protected:
     HINSTANCE m_hAppInst; // 应用实例句柄
@@ -103,20 +103,20 @@ protected:
     template <class T>
     using ComPtr = Microsoft::WRL::ComPtr<T>;
     // Direct3D 11
-    ComPtr<ID3D11Device> m_pd3dDevice; // D3D11设备
-    ComPtr<ID3D11DeviceContext> m_pd3dImmediateContext; // D3D11设备上下文
-    ComPtr<IDXGISwapChain> m_pSwapChain; // D3D11交换链
+    ComPtr<ID3D11Device> m_pd3dDevice; // D3D11 Device : 用于创建各种所需资源，如: Resource、View、Shader等。
+    ComPtr<ID3D11DeviceContext> m_pd3dImmediateContext; // D3D11 Device Context : 用于设置渲染状态、绘制几何体等。
+    ComPtr<IDXGISwapChain> m_pSwapChain;
     // Direct3D 11.1
-    ComPtr<ID3D11Device1> m_pd3dDevice1; // D3D11.1设备
-    ComPtr<ID3D11DeviceContext1> m_pd3dImmediateContext1; // D3D11.1设备上下文
-    ComPtr<IDXGISwapChain1> m_pSwapChain1; // D3D11.1交换链
+    ComPtr<ID3D11Device1> m_pd3dDevice1; // D3D11.1 Device
+    ComPtr<ID3D11DeviceContext1> m_pd3dImmediateContext1; // D3D11.1 Device Context
+    ComPtr<IDXGISwapChain1> m_pSwapChain1;
     // 常用资源
     ComPtr<ID3D11Texture2D> m_pDepthStencilBuffer; // 深度模板缓冲区
     ComPtr<ID3D11RenderTargetView> m_pRenderTargetView; // 渲染目标视图
     ComPtr<ID3D11DepthStencilView> m_pDepthStencilView; // 深度模板视图
     D3D11_VIEWPORT m_ScreenViewport; // 视口
 
-    // 派生类应该在构造函数设置好这些自定义的初始参数
+    // 自定义的窗口配置，在构造函数中设置。
     std::wstring m_MainWndCaption; // 主窗口标题
     int m_ClientWidth; // 视口宽度
     int m_ClientHeight; // 视口高度
