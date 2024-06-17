@@ -1,15 +1,18 @@
-#include "d3dApp.h"
-#include "d3dUtil.h"
+#include "D3DApp.h"
+
+#include "Logger.h"
+#include "D3DUtil.h"
 #include "DXTrace.h"
+
 #include <sstream>
 
 #pragma warning(disable: 6031)
 
 extern "C" {
-// 在具有多显卡的硬件设备中，优先使用NVIDIA或AMD的显卡运行
-// 需要在.exe中使用
-__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
+	// 在具有多显卡的硬件设备中，优先使用NVIDIA或AMD的显卡运行
+	// 需要在.exe中使用
+	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 0x00000001;
 }
 
 namespace
@@ -30,22 +33,22 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 D3DApp::D3DApp(HINSTANCE hInstance, const std::wstring& windowName, int initWidth, int initHeight)
 	: m_hAppInst(hInstance),
-	  m_MainWndCaption(windowName),
-	  m_ClientWidth(initWidth),
-	  m_ClientHeight(initHeight),
-	  m_hMainWnd(nullptr),
-	  m_AppPaused(false),
-	  m_Minimized(false),
-	  m_Maximized(false),
-	  m_Resizing(false),
-	  m_Enable4xMsaa(true),
-	  m_4xMsaaQuality(0),
-	  m_pd3dDevice(nullptr),
-	  m_pd3dImmediateContext(nullptr),
-	  m_pSwapChain(nullptr),
-	  m_pDepthStencilBuffer(nullptr),
-	  m_pRenderTargetView(nullptr),
-	  m_pDepthStencilView(nullptr)
+	m_MainWndCaption(windowName),
+	m_ClientWidth(initWidth),
+	m_ClientHeight(initHeight),
+	m_hMainWnd(nullptr),
+	m_AppPaused(false),
+	m_Minimized(false),
+	m_Maximized(false),
+	m_Resizing(false),
+	m_Enable4xMsaa(true),
+	m_4xMsaaQuality(0),
+	m_pd3dDevice(nullptr),
+	m_pd3dImmediateContext(nullptr),
+	m_pSwapChain(nullptr),
+	m_pDepthStencilBuffer(nullptr),
+	m_pRenderTargetView(nullptr),
+	m_pDepthStencilView(nullptr)
 {
 	ZeroMemory(&m_ScreenViewport, sizeof(D3D11_VIEWPORT));
 
@@ -79,7 +82,7 @@ float D3DApp::AspectRatio() const
 
 int D3DApp::Run()
 {
-	MSG msg = {nullptr};
+	MSG msg = { nullptr };
 
 	m_Timer.Reset();
 
@@ -112,6 +115,8 @@ int D3DApp::Run()
 
 bool D3DApp::Init()
 {
+	Logger::Init();
+
 	if (!InitMainWindow())
 		return false;
 
@@ -134,12 +139,13 @@ void D3DApp::OnResize()
 		assert(m_pSwapChain1);
 	}
 
-	// 释放渲染管线输出用到的相关资源
+	// 重设渲染管线输出的相关资源
 	m_pRenderTargetView.Reset();
 	m_pDepthStencilView.Reset();
 	m_pDepthStencilBuffer.Reset();
 
-	// 重设交换链并且重新创建渲染目标视图
+	/* Step1. 通过 Swapchain 创建 Render Target View */
+
 	ComPtr<ID3D11Texture2D> backBuffer;
 	HR(m_pSwapChain->ResizeBuffers(1, m_ClientWidth, m_ClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 	HR(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf())));
@@ -150,6 +156,7 @@ void D3DApp::OnResize()
 
 	backBuffer.Reset();
 
+	/* Step2. 通过 D3D Device 创建 Depth/Stencil View */
 
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 
@@ -159,7 +166,7 @@ void D3DApp::OnResize()
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	// 要使用 4X MSAA? --需要给交换链设置MASS参数
+	// 配置 MSAA
 	if (m_Enable4xMsaa)
 	{
 		depthStencilDesc.SampleDesc.Count = 4;
@@ -171,7 +178,6 @@ void D3DApp::OnResize()
 		depthStencilDesc.SampleDesc.Quality = 0;
 	}
 
-
 	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
 	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	depthStencilDesc.CPUAccessFlags = 0;
@@ -181,11 +187,13 @@ void D3DApp::OnResize()
 	HR(m_pd3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, m_pDepthStencilBuffer.GetAddressOf()));
 	HR(m_pd3dDevice->CreateDepthStencilView(m_pDepthStencilBuffer.Get(), nullptr, m_pDepthStencilView.GetAddressOf()));
 
+	/* Step3. 将刚才创建的 RenderTargetView 和 Depth/Stencil Buffer 设置到 D3D Context 的 Render Target */
 
-	// 将渲染目标视图和深度/模板缓冲区结合到管线
 	m_pd3dImmediateContext->OMSetRenderTargets(1, m_pRenderTargetView.GetAddressOf(), m_pDepthStencilView.Get());
 
-	// 设置视口变换
+	/* Step4. 设置 Viewport */
+
+	// 配置 Viewport Transport
 	m_ScreenViewport.TopLeftX = 0;
 	m_ScreenViewport.TopLeftY = 0;
 	m_ScreenViewport.Width = static_cast<float>(m_ClientWidth);
@@ -200,9 +208,9 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	// WM_ACTIVATE is sent when the window is activated or deactivated.  
-	// We pause the game when the window is deactivated and unpause it 
-	// when it becomes active.  
+		// WM_ACTIVATE is sent when the window is activated or deactivated.  
+		// We pause the game when the window is deactivated and unpause it 
+		// when it becomes active.  
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE)
 		{
@@ -216,7 +224,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
-	// WM_SIZE is sent when the user resizes the window.  
+		// WM_SIZE is sent when the user resizes the window.  
 	case WM_SIZE:
 		// Save the new client area dimensions.
 		m_ClientWidth = LOWORD(lParam);
@@ -272,15 +280,15 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
-	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 	case WM_ENTERSIZEMOVE:
 		m_AppPaused = true;
 		m_Resizing = true;
 		m_Timer.Stop();
 		return 0;
 
-	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-	// Here we reset everything based on the new window dimensions.
+		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+		// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
 		m_AppPaused = false;
 		m_Resizing = false;
@@ -288,18 +296,18 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		OnResize();
 		return 0;
 
-	// WM_DESTROY is sent when the window is being destroyed.
+		// WM_DESTROY is sent when the window is being destroyed.
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
 
-	// The WM_MENUCHAR message is sent when a menu is active and the user presses 
-	// a key that does not correspond to any mnemonic or accelerator key. 
+		// The WM_MENUCHAR message is sent when a menu is active and the user presses 
+		// a key that does not correspond to any mnemonic or accelerator key. 
 	case WM_MENUCHAR:
 		// Don't beep when we alt-enter.
 		return MAKELRESULT(0, MNC_CLOSE);
 
-	// Catch this message so to prevent the window from becoming too small.
+		// Catch this message so to prevent the window from becoming too small.
 	case WM_GETMINMAXINFO:
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
@@ -342,14 +350,14 @@ bool D3DApp::InitMainWindow()
 	}
 
 	// Compute window rectangle dimensions based on requested client area dimensions.
-	RECT R = {0, 0, m_ClientWidth, m_ClientHeight};
+	RECT R = { 0, 0, m_ClientWidth, m_ClientHeight };
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;
 
 	m_hMainWnd = CreateWindow(L"D3DWndClassName", m_MainWndCaption.c_str(),
-	                          WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr,
-	                          m_hAppInst, nullptr);
+		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, nullptr, nullptr,
+		m_hAppInst, nullptr);
 	if (!m_hMainWnd)
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);
@@ -382,7 +390,7 @@ bool D3DApp::InitDirect3D()
 	};
 	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
-	/* 初始化 D3D Device & Context */
+	/* Step1. 初始化 D3D Device & Context */
 
 	D3D_FEATURE_LEVEL featureLevel;
 	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
@@ -396,23 +404,23 @@ bool D3DApp::InitDirect3D()
 
 		// 尝试创建 D3D Device
 		hr = D3D11CreateDevice(nullptr, // 制定显示适配器/显卡设备，nullptr 则由底层驱动来帮我们决定使用哪个显卡
-		                       d3dDriverType, // 驱动类型
-		                       nullptr, // 软件驱动模块的句柄，若设配器选择 D3D_DRIVER_TYPE_SOFTWARE，则需要提供程序模块
-		                       createDeviceFlags, // D3D11_CREATE_DEVICE_FLAG
-		                       featureLevels, // 特性等级数组
-		                       numFeatureLevels, // 特性等级数组的大小
-		                       D3D11_SDK_VERSION, // D3D11 SDK 版本
-		                       m_pd3dDevice.GetAddressOf(), // 返回创建的 D3D Device
-		                       &featureLevel, // 返回创建的 feature level
-		                       m_pd3dImmediateContext.GetAddressOf()); // 返回创建的 D3D Context
+			d3dDriverType, // 驱动类型
+			nullptr, // 软件驱动模块的句柄，若设配器选择 D3D_DRIVER_TYPE_SOFTWARE，则需要提供程序模块
+			createDeviceFlags, // D3D11_CREATE_DEVICE_FLAG
+			featureLevels, // 特性等级数组
+			numFeatureLevels, // 特性等级数组的大小
+			D3D11_SDK_VERSION, // D3D11 SDK 版本
+			m_pd3dDevice.GetAddressOf(), // 返回创建的 D3D Device
+			&featureLevel, // 返回创建的 feature level
+			m_pd3dImmediateContext.GetAddressOf()); // 返回创建的 D3D Context
 
 		if (hr == E_INVALIDARG)
 		{
 			// 如果Direct3D 11.0 的API不承认D3D_FEATURE_LEVEL_11_1，所以我们需要尝试特性等级11.0以及以下的版本
 			hr = D3D11CreateDevice(nullptr, d3dDriverType, nullptr, createDeviceFlags, &featureLevels[1],
-			                       numFeatureLevels - 1,
-			                       D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel,
-			                       m_pd3dImmediateContext.GetAddressOf());
+				numFeatureLevels - 1,
+				D3D11_SDK_VERSION, m_pd3dDevice.GetAddressOf(), &featureLevel,
+				m_pd3dImmediateContext.GetAddressOf());
 		}
 
 		if (SUCCEEDED(hr))
@@ -424,7 +432,7 @@ bool D3DApp::InitDirect3D()
 		return false;
 	}
 
-	// 检测是否支持特性等级11.0或11.1
+	// 检测是否支持 D3D 特性等级 11.0 或 11.1
 	if (featureLevel != D3D_FEATURE_LEVEL_11_0 && featureLevel != D3D_FEATURE_LEVEL_11_1)
 	{
 		MessageBox(0, L"Direct3D Feature Level 11 unsupported.", 0, 0);
@@ -436,14 +444,14 @@ bool D3DApp::InitDirect3D()
 		DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_4xMsaaQuality);
 	assert(m_4xMsaaQuality > 0);
 
-	/* 初始化 DXGI, 包括: Swapchain */
+	/* Step2. 初始化 DXGI, 包括: Swapchain */
 
 	ComPtr<IDXGIDevice> dxgiDevice = nullptr;
 	ComPtr<IDXGIAdapter> dxgiAdapter = nullptr;
 	ComPtr<IDXGIFactory1> dxgiFactory1 = nullptr; // D3D11.0(包含DXGI1.1)的接口类
 	ComPtr<IDXGIFactory2> dxgiFactory2 = nullptr; // D3D11.1(包含DXGI1.2)特有的接口类
 
-	// 为了正确创建 DXGI交换链，首先我们需要获取创建 D3D设备 的 DXGI工厂，否则会引发报错：
+	// 为了正确创建 DXGI Swapchain，首先我们需要获取创建 D3D Device 的 DXGI Factory，否则会引发报错：
 	// "IDXGIFactory::CreateSwapChain: This function is being called with a device from a different IDXGIFactory."
 	HR(m_pd3dDevice.As(&dxgiDevice));
 	HR(dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf()));
@@ -476,7 +484,7 @@ bool D3DApp::InitDirect3D()
 		}
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
-		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; // TODO : use DXGI_SWAP_EFFECT_FLIP_DISCARD
 		sd.Flags = 0;
 
 		// Swapchain Description
@@ -492,7 +500,7 @@ bool D3DApp::InitDirect3D()
 			GetAddressOf()));
 		HR(m_pSwapChain1.As(&m_pSwapChain));
 	}
-	else
+	else // 如果不包含，则说明仅支持 D3D11.0
 	{
 		// Swapchain Description
 		DXGI_SWAP_CHAIN_DESC sd;
@@ -517,9 +525,9 @@ bool D3DApp::InitDirect3D()
 		}
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
+		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; // TODO : use DXGI_SWAP_EFFECT_FLIP_DISCARD
 		sd.OutputWindow = m_hMainWnd;
 		sd.Windowed = TRUE;
-		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		sd.Flags = 0;
 
 		// 为当前窗口创建 Swapchain
@@ -529,7 +537,7 @@ bool D3DApp::InitDirect3D()
 	// 禁止alt+enter全屏
 	dxgiFactory1->MakeWindowAssociation(m_hMainWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 
-	/* 调用 D3D11 API 执行初始化 */
+	/* Step3. 调用 D3D11 API 执行初始化设置 */
 
 	// 设置调试对象名
 	D3D11SetDebugObjectName(m_pd3dImmediateContext.Get(), "ImmediateContext");

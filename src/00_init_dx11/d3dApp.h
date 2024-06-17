@@ -1,6 +1,6 @@
 //***************************************************************************************
 // Frank Luna (C) 2011 All Rights Reserved.
-// Direct3D 应用程序框架
+// Direct3D Application Framework
 //***************************************************************************************
 
 #pragma once
@@ -82,7 +82,7 @@ protected:
     bool InitDirect3D();
 
     /**
-     * 计算每秒帧数并在窗口显示
+     * 计算每秒帧数并在窗口中显示
      */
     void CalculateFrameStats() const;
 
@@ -96,8 +96,10 @@ protected:
     bool m_Enable4xMsaa; // 是否开启4倍多重采样
     UINT m_4xMsaaQuality; // MSAA支持的质量等级
 
-
-    GameTimer m_Timer; // 计时器
+	// 自定义的窗口配置
+	std::wstring m_MainWndCaption; // 主窗口标题
+	int m_ClientWidth; // 视口宽度
+	int m_ClientHeight; // 视口高度
 
     // 使用模板别名简化类型名 ComPtr
     template <class T>
@@ -110,14 +112,11 @@ protected:
     ComPtr<ID3D11Device1> m_pd3dDevice1; // D3D11.1 Device
     ComPtr<ID3D11DeviceContext1> m_pd3dImmediateContext1; // D3D11.1 Device Context
     ComPtr<IDXGISwapChain1> m_pSwapChain1;
-    // 常用资源
+    // 通用资源
     ComPtr<ID3D11Texture2D> m_pDepthStencilBuffer; // 深度模板缓冲区
     ComPtr<ID3D11RenderTargetView> m_pRenderTargetView; // 渲染目标视图
     ComPtr<ID3D11DepthStencilView> m_pDepthStencilView; // 深度模板视图
     D3D11_VIEWPORT m_ScreenViewport; // 视口
 
-    // 自定义的窗口配置，在构造函数中设置。
-    std::wstring m_MainWndCaption; // 主窗口标题
-    int m_ClientWidth; // 视口宽度
-    int m_ClientHeight; // 视口高度
+	GameTimer m_Timer; // 计时器
 };

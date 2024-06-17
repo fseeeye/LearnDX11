@@ -6,9 +6,9 @@ add_rules("plugin.vsxmake.autoupdate")
 add_rules("mode.debug", "mode.release")
 if is_mode("debug") then
     add_defines("DEBUG", "_DEBUG")
-    set_runtimes("MTd") -- msvc runtime library: multithreaded static library (debug)
+    set_runtimes("MDd") -- msvc runtime library: multithreaded dynamic library (debug)
 else
-    set_runtimes("MT") -- msvc runtime library: multithreaded static library
+    set_runtimes("MD") -- msvc runtime library: multithreaded dynamic library
 end
 
 -- add macro definition
@@ -16,6 +16,15 @@ add_defines("UNICODE", "_UNICODE")
 
 -- set warning all as error
 set_warnings("all", "error")
+
+-- set requires
+if is_mode("debug") then
+    add_requires("fmt 10.2", {configs = {shared = true}, alias = "fmt", debug = true})
+    add_requires("spdlog 1.14", {configs = {shared = true}, alias = "spdlog", debug = true})
+else
+    add_requires("fmt 10.2", {configs = {shared = true}, alias = "fmt"})
+    add_requires("spdlog 1.14", {configs = {shared = true}, alias = "spdlog"})
+end
 
 -- define target
 target("01_init_dx11")
@@ -37,6 +46,9 @@ target("01_init_dx11")
 
     -- set optimization: none, faster, fastest, smallest
     set_optimize("none")
+
+    -- add packages
+    add_packages("fmt", "spdlog")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
