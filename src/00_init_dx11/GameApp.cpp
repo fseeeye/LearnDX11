@@ -31,7 +31,8 @@ void GameApp::DrawScene()
 
 	// 清空 RenderTarget 为蓝色
 	static float blue[4] = {0.0f, 0.0f, 1.0f, 1.0f}; // RGBA = (0,0,255,255)
-	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), blue);
+	static float black[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+	m_pd3dImmediateContext->ClearRenderTargetView(m_pRenderTargetView.Get(), black);
 	// 清空 Depth/Stencil View
 	m_pd3dImmediateContext->ClearDepthStencilView(m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 	                                              1.0f, 0);

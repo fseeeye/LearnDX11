@@ -451,11 +451,33 @@ bool D3DApp::InitDirect3D()
 	ComPtr<IDXGIFactory1> dxgiFactory1 = nullptr; // D3D11.0(包含DXGI1.1)的接口类
 	ComPtr<IDXGIFactory2> dxgiFactory2 = nullptr; // D3D11.1(包含DXGI1.2)特有的接口类
 
-	// 为了正确创建 DXGI Swapchain，首先我们需要获取创建 D3D Device 的 DXGI Factory，否则会引发报错：
+
+	// 为了正确创建 DXGI Swapchain，首先我们需要获取 D3D Device -> DXGI Device -> DXGI Factory，否则会引发报错：
 	// "IDXGIFactory::CreateSwapChain: This function is being called with a device from a different IDXGIFactory."
 	HR(m_pd3dDevice.As(&dxgiDevice));
 	HR(dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf()));
 	HR(dxgiAdapter->GetParent(__uuidof(IDXGIFactory1), reinterpret_cast<void**>(dxgiFactory1.GetAddressOf())));
+
+	// DEBUG DXGIOutput
+	UINT i = 0;
+	IDXGIOutput* tmpOutput = nullptr; //IDXGIOutput表示适配器输出，例如监视器，显示器
+	while (dxgiAdapter->EnumOutputs(i, &tmpOutput) != DXGI_ERROR_NOT_FOUND)
+	{
+		DXGI_OUTPUT_DESC desc;
+		tmpOutput->GetDesc(&desc);
+		std::wstring outputName = desc.DeviceName;
+
+		DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		UINT flags = DXGI_ENUM_MODES_INTERLACED;
+		UINT num = 0;
+		tmpOutput->GetDisplayModeList(format, flags, &num, 0);
+		DXGI_MODE_DESC* pDescs = new DXGI_MODE_DESC[num];
+		tmpOutput->GetDisplayModeList(format, flags, &num, pDescs);
+
+		LOG_INFO(L"Current Output Name: {}, Display Mode nums: {}", outputName, num);
+		delete[] pDescs;
+		++i;
+	}
 
 	// 查看该对象是否包含IDXGIFactory2接口
 	hr = dxgiFactory1.As(&dxgiFactory2);

@@ -50,6 +50,9 @@ target("01_init_dx11")
     -- add packages
     add_packages("fmt", "spdlog")
 
+    -- add defines
+    add_defines("SPDLOG_WCHAR_TO_UTF8_SUPPORT")
+
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --
